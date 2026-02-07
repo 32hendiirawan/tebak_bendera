@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menu Utama - Kuis Balap Sepeda</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, rgb(255,127,0), rgb(0,192,255));
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(0px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            width: 80%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0px;
+            color: #f1c40f;
+            text-shadow: 3px 3px 0px #c0392b;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #ecf0f1;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-menu {
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: white;
+            display: block;
+            width: 50%;
+        }
+
+        .btn-start {
+            background: #27ae60;
+            box-shadow: 0 5px 0 #1e8449;
+        }
+
+        .btn-start:hover {
+            background: #2ecc71;
+            transform: scale(1.05);
+        }
+
+        .btn-start:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .info-section {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        /* Animasi Sepeda Kecil di Menu */
+        .bike-anim {
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        @keyframes drive {
+            0% { transform: translateX(-20px); }
+            50% { transform: translateX(20px); }
+            100% { transform: translateX(-20px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="p1.gif" class="bike-anim" alt="Bike1" style="transform: scaleX(-1)">
+        <img src="p2.gif" class="bike-anim" alt="Bike2">
+        <h1>BALAP SEPEDA</h1>
+        <p class="subtitle">Kuis Tebak Bendera Negara</p>
+
+        <div class="menu-buttons" style="display: flex;">
+            <a href="race-bot.html" class="btn-menu btn-start">VS BOT</a>
+            <a href="race.html" class="btn-menu btn-start">2 PLAYER</a>
+            <a href="bubble_home.html" class="btn-menu btn-start">BUBBLE</a>
+        </div>
+
+        <div class="info-section">
+            <p style="margin-bottom: 6px;"><strong>By : APTX4869</strong><br>
+                <a href="https://wa.me/6282289015759" target="_blank" style="text-decoration: none; color: white;"><img src="https://lh3.googleusercontent.com/proxy/xYxHU8TszxncMZtalNDf0_ZHQORlXCktZcFK48b5vd3XJ1lF_ZDFG-4P0v6wMC25eGEVf4NSlApaJsL9wTvD8FLZiC9sGkqL17xjK6fBkKFDRJN0kiPvCfncVQ" height="48px"></a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

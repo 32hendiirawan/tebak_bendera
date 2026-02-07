@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat!</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, rgb(255,127,0), rgb(0,192,255));
+            color: white;
+            overflow: hidden;
+        }
+        .winner-text { font-size: 2.5rem; font-weight: bold; margin-top: 10px; }
+        .winner-gif { width: 100px; margin: 20px; border-radius: 10px; }
+        .trophy { height: 150px; }
+        .buttons { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { padding: 15px 25px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; color: white; text-decoration: none; }
+        .btn-play { background: #2ecc71; }
+        .btn-menu { background: #f39c12; }
+        .info-section {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+    </style>
+</head>
+<body>
+    <img src="piala.gif" class="trophy" alt="trophy">
+    <div id="winner-name" class="winner-text">MENANG!</div>
+    
+    <div class="buttons">
+        <a href="index.html" class="btn btn-menu">MENU UTAMA</a>
+    </div>
+
+    <div class="info-section">
+        <p style="margin-bottom: 6px;"><strong>By : APTX4869</strong><br>
+            <a href="https://wa.me/6282289015759" target="_blank" style="text-decoration: none; color: white;"><img src="https://lh3.googleusercontent.com/proxy/xYxHU8TszxncMZtalNDf0_ZHQORlXCktZcFK48b5vd3XJ1lF_ZDFG-4P0v6wMC25eGEVf4NSlApaJsL9wTvD8FLZiC9sGkqL17xjK6fBkKFDRJN0kiPvCfncVQ" height="48px"></a>
+        </p>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const winner = params.get('winner'); // Ambil "Player 1" atau "Player 2"
+        
+        document.getElementById('winner-name').innerText = `${winner} MENANG!`;
+        
+        // Logika Ganti Gambar
+        const imgElement = document.getElementById('winner-img');
+        if (winner === "Player 1") {
+            imgElement.src = "p1.gif";
+        } else {
+            imgElement.src = "p2.gif";
+        }
+    </script>
+</body>
+</html>

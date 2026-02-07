@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Player vs Bot - Race</title>
+    <style>
+        :root { --player-color: #2ecc71; --bot-color: #95a5a6; }
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center; 
+            background: linear-gradient(135deg, rgb(255,127,0), rgb(0,192,255));
+            height: 100vh;    
+            color: white;
+            overflow: hidden; }
+
+        /* LINTASAN */
+        .race-container {
+            width: 95%; max-width: 800px; background: #34495e; height: 120px; 
+            position: relative; border: 4px solid #2c3e50; border-radius: 10px; margin: 20px 0;
+        }
+        .finish-line { 
+            position: absolute; right: 15px; height: 100%; width: 12px; 
+            background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px); 
+        }
+        .bike { 
+            position: absolute; width: 70px; z-index: 2;
+            transition: left 0.4s ease-out; 
+        }
+        /* Bot bergerak konstan dengan transisi linear panjang */
+        #bike-bot { 
+            top: 10px; 
+            left: 0;
+            transition: left 30s linear; } 
+        #bike-player { bottom: 10px; }
+
+        /* SOAL */
+        .question-area {
+            text-align: center; background: white; padding: 10px; border-radius: 15px;
+            width: 90%; max-width: 500px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); color: #333;
+        }
+        .flag-img { height: 80px; border: 1px solid #ddd; margin: 10px 0; }
+        .timer-display { font-size: 1.2rem; font-weight: bold; color: #e67e22; }
+
+        /* AREA JAWABAN (SATU KOLOM) */
+        .input-container {
+            width: 90%; max-width: 500px; display: grid; 
+            grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+        }
+        .btn-answer {
+            padding: 10px; border: none; border-radius: 10px; font-weight: bold; 
+            font-size: 1rem; background: #ecf0f1; cursor: pointer;
+            box-shadow: 0 4px 0 #bdc3c7;
+        }
+        .btn-answer:active { transform: translateY(2px); box-shadow: none; }
+        .correct { background: #2ecc71 !important; color: white; }
+        .wrong { background: #e74c3c !important; color: white; }
+
+        /* OVERLAYS */
+        #start-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+        }
+        #countdown-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            font-weight: bold;
+            color: #f1c40f;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 200;
+            display: none; /* Sembunyi secara default */
+            pointer-events: none;
+        }
+
+        .countdown-anim {
+            animation: pop 1s ease-out;
+        }
+
+        @keyframes pop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body id="main-body">
+
+    <div id="start-overlay">
+        <button class="btn-answer" style="background: #f1c40f;" onclick="startGame()">START</button>
+    </div>
+    <div id="countdown-box"></div>
+
+    <div class="race-container">
+        <div class="finish-line"></div>
+        <img id="bike-bot" class="bike" src="p2.gif" style="transform: scaleX(-1);">
+        <img id="bike-player" class="bike" src="p1.gif" style="transform: scaleX(-1);">
+    </div>
+
+    <div class="question-area">
+        <img id="flag-display" class="flag-img" src="">
+    </div>
+
+    <div class="input-container" id="answer-area">
+        <button class="btn-answer" onclick="handleInput(0)"></button>
+        <button class="btn-answer" onclick="handleInput(1)"></button>
+        <button class="btn-answer" onclick="handleInput(2)"></button>
+        <button class="btn-answer" onclick="handleInput(3)"></button>
+    </div>
+
+<script>
+    let fullDatabase = [];
+    let currentIdx = 0;
+    let playerScore = 0;
+    let isLocked = false;
+    let gameActive = false;
+    const WIN_SCORE = 10;
+    const BOT_DURATION = 30; // Detik
+
+    async function initData() {
+        try {
+            const response = await fetch('soal.json');
+            fullDatabase = await response.json();
+        } catch (e) {
+            // Fallback jika json gagal load
+            fullDatabase = [
+                { f: "id", n: "Indonesia" }, { f: "jp", n: "Jepang" }, { f: "br", n: "Brasil" },
+                { f: "fr", n: "Prancis" }, { f: "us", n: "Amerika Serikat" }, { f: "de", n: "Jerman" },
+                { f: "sa", n: "Arab Saudi" }, { f: "kr", n: "Korea Selatan" }, { f: "it", n: "Italia" },
+                { f: "gb", n: "Inggris" }, { f: "ca", n: "Kanada" }, { f: "au", n: "Australia" },
+                { f: "ru", n: "Rusia" }, { f: "tr", n: "Turki" }, { f: "nl", n: "Belanda" },
+                { f: "my", n: "Malaysia" }, { f: "sg", n: "Singapura" }, { f: "th", n: "Thailand" },
+                { f: "in", n: "India" }, { f: "hk", n: "Hongkong" }, { f: "kp", n: "Korea Utara" },
+                { f: "tl", n: "Timor Leste"}, { f: "ua", n: "Ukraina"}, { f: "ae", n: "Uni Emirat Arab"},
+                { f: "nz", n: "Selandia Baru"}, { f: "pg", n: "Papua Nugini"}, { f: "ph", n: "Filipina"},
+                { f: "pl", n: "Polandia"}, { f: "kh", n: "Kamboja"}, { f: "la", n: "Laos"},
+                { f: "bn", n: "Brunei Darussalam"}, { f: "vn", n: "Vietnam"}, { f: "ps", n: "Palestina"},
+            ];
+        }
+    }
+
+    function startGame() {
+        // Sembunyikan tombol mulai
+        document.getElementById('start-overlay').style.display = 'none';
+        
+        const countBox = document.getElementById('countdown-box');
+        let count = 3;
+
+        countBox.style.display = 'block';
+
+        const countdownInterval = setInterval(() => {
+            if (count > 0) {
+                countBox.innerText = count;
+                countBox.classList.remove('countdown-anim');
+                void countBox.offsetWidth; // Trigger reflow agar animasi bisa diulang
+                countBox.classList.add('countdown-anim');
+                count--;
+            } else {
+                clearInterval(countdownInterval);
+                countBox.style.display = 'none';
+                actualStart(); // Panggil fungsi utama permainan
+            }
+        }, 1000);
+    }
+
+    // Fungsi utama yang menjalankan game (sebelumnya ada di startGame)
+    function actualStart() {
+        gameActive = true;
+        
+        const trackWidth = document.querySelector('.race-container').clientWidth - 80;
+        const botBike = document.getElementById('bike-bot');
+
+        // Reset posisi bot
+        botBike.style.transition = "none";
+        botBike.style.left = "0px";
+
+        // Listener bot sampai finish
+        botBike.addEventListener('transitionend', () => {
+            if (gameActive && playerScore < WIN_SCORE) {
+                endGame("Bot");
+            }
+        }, { once: true });
+
+        // Mulai gerakan bot
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                botBike.style.transition = `left ${BOT_DURATION}s linear`; 
+                botBike.style.left = trackWidth + "px";
+            });
+        });
+
+        // Jalankan timer visual
+        let timeLeft = BOT_DURATION;
+        const timerInt = setInterval(() => {
+            if (!gameActive) {
+                clearInterval(timerInt);
+                return;
+            }
+            timeLeft--;
+            document.getElementById('time-left').innerText = `Waktu Bot: ${timeLeft}s`;
+            if (timeLeft <= 0) clearInterval(timerInt);
+        }, 1000);
+
+        initQuestions();
+    }
+
+    function initQuestions() {
+        const shuffled = [...fullDatabase].sort(() => 0.5 - Math.random());
+        gameQuestions = shuffled.map(item => {
+            const wrong = fullDatabase.filter(x => x.n !== item.n).sort(() => 0.5 - Math.random()).slice(0, 3).map(x => x.n);
+            const options = [item.n, ...wrong].sort(() => 0.5 - Math.random());
+            return { flag: `https://flagcdn.com/w320/${item.f}.png`, options, correct: options.indexOf(item.n) };
+        });
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (!gameActive) return;
+        isLocked = false;
+        const data = gameQuestions[currentIdx];
+        document.getElementById('flag-display').src = data.flag;
+
+        
+        const btns = document.querySelectorAll('#answer-area .btn-answer');
+        data.options.forEach((opt, i) => {
+            btns[i].innerText = opt;
+            btns[i].className = 'btn-answer';
+        });
+    }
+
+    function handleInput(choiceIdx) {
+        if (isLocked || !gameActive) return;
+        isLocked = true;
+
+        const data = gameQuestions[currentIdx];
+        const btns = document.querySelectorAll('#answer-area .btn-answer');
+
+        if (choiceIdx === data.correct) {
+            playerScore++;
+            btns[choiceIdx].classList.add('correct');
+            updatePlayerBike();
+            
+            if (playerScore >= WIN_SCORE) {
+                endGame("Player");
+                return;
+            }
+        } else {
+            btns[choiceIdx].classList.add('wrong');
+            // Hukuman jika salah: Bot tidak melambat, Player tertahan sebentar
+        }
+
+        setTimeout(() => {
+            currentIdx = (currentIdx + 1) % gameQuestions.length;
+            loadQuestion();
+        }, 600);
+    }
+
+    function updatePlayerBike() {
+        const trackWidth = document.querySelector('.race-container').clientWidth - 80;
+        const progress = (playerScore / WIN_SCORE) * trackWidth;
+        document.getElementById('bike-player').style.left = progress + "px";
+    }
+
+    function endGame(winner) {
+        gameActive = false;
+        // Hentikan bot di posisi sekarang
+        const botBike = document.getElementById('bike-bot');
+        const currentLeft = window.getComputedStyle(botBike).left;
+        botBike.style.transition = "none";
+        botBike.style.left = currentLeft;
+
+        setTimeout(() => {
+            window.location.href = `win.html?winner=${encodeURIComponent(winner === "Player" ? "PLAYER" : "BOT")}`;
+        }, 500);
+    }
+
+    initData();
+</script>
+</body>
+</html>
